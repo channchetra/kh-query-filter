@@ -1,0 +1,20 @@
+{
+	"name": "humanmade/query-filter",
+	"description": "Query Loop Block filters",
+	"type": "wordpress-plugin",
+	"require": {
+		"composer/installers": "^1 || ^2"
+	},
+	"license": "GPL-2.0-or-later",
+	"authors": [
+		{
+			"name": "Human Made Limited",
+			"email": "hello@humanmade.com"
+		}
+	],
+	"config": {
+		"allow-plugins": {
+			"composer/installers": true
+		}
+	}
+}

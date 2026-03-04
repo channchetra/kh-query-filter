@@ -1,0 +1,58 @@
+@view-transition {
+	navigation: auto;
+}
+
+.wp-block-query-filter {
+	display: flex;
+	flex-direction: column;
+	justify-content: stretch;
+}
+
+/* Buttons / choice display mode */
+.wp-block-query-filter-taxonomy__choices {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5em;
+}
+
+.wp-block-query-filter-taxonomy__choice {
+	display: inline-block;
+	padding: 0.3em 0.8em;
+	border: 1px solid currentColor;
+	border-radius: 4px;
+	text-decoration: none;
+	color: inherit;
+	cursor: pointer;
+	transition: background-color 0.15s, color 0.15s;
+	font-size: inherit;
+	line-height: inherit;
+}
+
+.wp-block-query-filter-taxonomy__choice:hover {
+	opacity: 0.75;
+}
+
+.wp-block-query-filter-taxonomy__choice.is-active {
+	background-color: currentColor;
+}
+
+.wp-block-query-filter-taxonomy__choice.is-active {
+	/* Use outline trick: the text inside gets a contrasting color */
+	position: relative;
+}
+
+/* The active button has currentColor as background, so we need contrasting text.
+   Wrap term name in the element and use mix-blend-mode for universal contrast. */
+.wp-block-query-filter-taxonomy__choice.is-active {
+	background-color: var(--wp--preset--color--contrast, currentColor);
+	color: var(--wp--preset--color--base, #fff);
+	border-color: var(--wp--preset--color--contrast, currentColor);
+}
+
+/* Filter Group container */
+.wp-block-query-filter-group {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1em;
+	align-items: flex-start;
+}

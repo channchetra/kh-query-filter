@@ -1,0 +1,93 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "query-filter/taxonomy",
+	"version": "0.2.0",
+	"title": "Taxonomy Filter",
+	"category": "theme",
+	"icon": "filter",
+	"description": "Filter by taxonomy terms. Works inside a Query Loop or connected to any query-style block.",
+	"usesContext": [ "queryId", "query", "query-filter/targetBlockId", "query-filter/targetBlockType" ],
+	"supports": {
+		"html": false,
+		"className": true,
+		"customClassName": true,
+		"color": {
+			"background": true,
+			"text": true
+		},
+		"typography": {
+			"fontSize": true,
+			"textAlign": true,
+			"lineHeight": true,
+			"__experimentalFontFamily": true,
+			"__experimentalFontWeight": true,
+			"__experimentalFontStyle": true,
+			"__experimentalTextTransform": true,
+			"__experimentalTextDecoration": true,
+			"__experimentalLetterSpacing": true,
+			"__experimentalDefaultControls": {
+				"fontSize": true
+			}
+		},
+		"spacing": {
+			"margin": true,
+			"padding": true,
+			"blockGap": true
+		},
+		"interactivity": {
+			"clientNavigation": true
+		}
+	},
+	"attributes": {
+		"taxonomy": {
+			"type": "string"
+		},
+		"emptyLabel": {
+			"type": "string",
+			"default": ""
+		},
+		"label": {
+			"type": "string"
+		},
+		"showLabel": {
+			"type": "boolean",
+			"default": true
+		},
+		"displayMode": {
+			"type": "string",
+			"default": "dropdown",
+			"enum": [ "dropdown", "buttons" ]
+		},
+		"targetBlockId": {
+			"type": "string",
+			"default": ""
+		},
+		"targetBlockType": {
+			"type": "string",
+			"default": ""
+		},
+		"mode": {
+			"type": "string",
+			"default": "auto",
+			"enum": [ "auto", "manual" ]
+		},
+		"manualTaxonomy": {
+			"type": "string",
+			"default": ""
+		},
+		"manualTermIds": {
+			"type": "string",
+			"default": ""
+		},
+		"showAllTaxonomies": {
+			"type": "boolean",
+			"default": false
+		}
+	},
+	"textdomain": "query-filter",
+	"editorScript": "file:./index.js",
+	"style": "query-filter-view",
+	"viewScriptModule": "file:./view.js",
+	"render": "file:./render.php"
+}

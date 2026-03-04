@@ -1,0 +1,72 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "query-filter/search",
+  "version": "0.2.0",
+  "title": "Search Filter",
+  "category": "theme",
+  "icon": "search",
+  "description": "Search input that filters a connected query block. Works inside a Query Loop or connected to any query-style block.",
+  "usesContext": [
+    "queryId",
+    "query",
+    "query-filter/targetBlockId",
+    "query-filter/targetBlockType"
+  ],
+  "supports": {
+    "html": false,
+    "className": true,
+    "customClassName": true,
+    "color": {
+      "background": true,
+      "text": true
+    },
+    "typography": {
+      "fontSize": true,
+      "textAlign": true,
+      "lineHeight": true,
+      "__experimentalFontFamily": true,
+      "__experimentalFontWeight": true,
+      "__experimentalFontStyle": true,
+      "__experimentalTextTransform": true,
+      "__experimentalTextDecoration": true,
+      "__experimentalLetterSpacing": true,
+      "__experimentalDefaultControls": {
+        "fontSize": true
+      }
+    },
+    "spacing": {
+      "margin": true,
+      "padding": true,
+      "blockGap": true
+    },
+    "interactivity": {
+      "clientNavigation": true
+    }
+  },
+  "attributes": {
+    "placeholder": {
+      "type": "string",
+      "default": "Search…"
+    },
+    "label": {
+      "type": "string"
+    },
+    "showLabel": {
+      "type": "boolean",
+      "default": true
+    },
+    "targetBlockId": {
+      "type": "string",
+      "default": ""
+    },
+    "targetBlockType": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "textdomain": "query-filter",
+  "editorScript": "file:./index.js",
+  "viewScriptModule": "file:./view.js",
+  "render": "file:./render.php"
+}
