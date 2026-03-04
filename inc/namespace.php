@@ -110,9 +110,24 @@ function track_query_block_pre_render( $pre_render, array $parsed_block ) {
 /**
  * Pop the rendering stack when a known query-type block finishes rendering.
  *
+ * Some third-party blocks (e.g. GreenShift) call WP_Block::render() on their
+ * own block instance once per post inside the loop (to render the inner-block
+ * template for each item).  That per-post render also fires the `render_block`
+ * filter with blockName = 'greenshift-blocks/querygrid', so this callback is
+ * triggered N+1 times for a grid with N posts:
+ *   - N times with a fragment of inner-block HTML (one card per call)
+ *   - 1 time with the full grid HTML (the outermost render, which is the one
+ *     we actually want to annotate with data-qf-block-id)
+ *
+ * To distinguish these cases without block-specific knowledge we rely on the
+ * fact that the outermost render is the ONLY call whose rendered HTML contains
+ * an element with an id/class attribute that encodes the block's stable ID.
+ * We therefore scan the content for any element referencing $stable_id before
+ * deciding whether to (a) inject the attribute and (b) pop the stack.
+ *
  * @param string $content      The block content.
  * @param array  $parsed_block The block that just finished rendering.
- * @return string Unchanged content.
+ * @return string Possibly-modified content.
  */
 function track_query_block_post_render( string $content, array $parsed_block ) : string {
 	global $qf_rendering_query_blocks;
@@ -125,18 +140,63 @@ function track_query_block_post_render( string $content, array $parsed_block ) :
 		return $content;
 	}
 
-	$stable_id = array_pop( $qf_rendering_query_blocks );
+	// For core/query, always pop and let the existing render_block_core/query
+	// handler deal with attribute injection. Nothing else to do here.
+	if ( $block_name === 'core/query' ) {
+		array_pop( $qf_rendering_query_blocks );
+		return $content;
+	}
 
-	// For non-core blocks, inject data-qf-block-id so the frontend
-	// partial-refresh logic can locate the query container.
-	if ( $block_name !== 'core/query' && $stable_id ) {
-		$processor = new WP_HTML_Tag_Processor( $content );
-		// Use next_tag() (any tag) instead of next_tag('div') so we match
-		// any wrapper element type (div, section, ul, etc.).
-		if ( $processor->next_tag() ) {
-			$processor->set_attribute( 'data-qf-block-id', $stable_id );
-			$content = (string) $processor;
+	// --- Non-core blocks ---
+	// Peek at the top of the stack without popping yet.
+	$stable_id = end( $qf_rendering_query_blocks );
+
+	if ( ! $stable_id ) {
+		array_pop( $qf_rendering_query_blocks );
+		return $content;
+	}
+
+	// Scan the rendered HTML for any element whose id or class attribute
+	// contains the stable ID.  The outer container of the query block always
+	// carries the ID in one of these attributes; per-post inner-block renders
+	// produced by querybuilder-style loops do not.
+	$is_outer_render = false;
+	$processor       = new WP_HTML_Tag_Processor( $content );
+
+	while ( $processor->next_tag() ) {
+		$tag = strtolower( $processor->get_tag() );
+
+		// Skip non-container tags.
+		if ( in_array( $tag, [ 'style', 'script' ], true ) ) {
+			continue;
 		}
+
+		// Check id and class attributes for the stable_id fingerprint.
+		$id_attr    = (string) ( $processor->get_attribute( 'id' ) ?? '' );
+		$class_attr = (string) ( $processor->get_attribute( 'class' ) ?? '' );
+
+		if (
+			str_contains( $id_attr, $stable_id ) ||
+			str_contains( $class_attr, $stable_id )
+		) {
+			// This element belongs to the outer container — inject and stop.
+			$processor->set_attribute( 'data-qf-block-id', $stable_id );
+			$content         = (string) $processor;
+			$is_outer_render = true;
+			break;
+		}
+
+		// The first non-style/script element did not match: this is almost
+		// certainly a per-post inner-block fragment.  Stop here — we do not
+		// want to scan the entire (potentially large) content string.
+		break;
+	}
+
+	// Only pop the rendering stack once we have confirmed that the outer
+	// container was rendered.  Inner per-post renders leave the stack intact
+	// so that the entry is still available when the real outer render fires.
+	if ( $is_outer_render ) {
+		array_pop( $qf_rendering_query_blocks );
 	}
 
 	return $content;

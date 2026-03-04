@@ -31,6 +31,21 @@ async function partialRefresh( url, targetBlockId ) {
 	currentBlock.style.opacity = '0.5';
 	currentBlock.style.transition = 'opacity 0.2s';
 
+	// Snapshot focused element and cursor position before any async work.
+	// The DOM swap and history.pushState (which the WP Interactivity Router
+	// may intercept) can steal focus from an active search input.
+	const focusedEl = document.activeElement;
+	const selStart =
+		focusedEl instanceof HTMLInputElement ||
+		focusedEl instanceof HTMLTextAreaElement
+			? focusedEl.selectionStart
+			: null;
+	const selEnd =
+		focusedEl instanceof HTMLInputElement ||
+		focusedEl instanceof HTMLTextAreaElement
+			? focusedEl.selectionEnd
+			: null;
+
 	try {
 		const response = await fetch( url );
 		const html = await response.text();
@@ -41,6 +56,18 @@ async function partialRefresh( url, targetBlockId ) {
 			currentBlock.innerHTML = newBlock.innerHTML;
 			currentBlock.style.opacity = '';
 			window.history.pushState( null, '', url );
+
+			// Restore focus and cursor if stolen by the DOM swap or pushState.
+			if (
+				focusedEl &&
+				document.contains( focusedEl ) &&
+				document.activeElement !== focusedEl
+			) {
+				focusedEl.focus();
+				if ( selStart !== null ) {
+					focusedEl.setSelectionRange( selStart, selEnd );
+				}
+			}
 		} else {
 			window.location.href = url;
 		}
